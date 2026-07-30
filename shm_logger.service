@@ -1,0 +1,24 @@
+[Unit]
+Description=shm_logger
+
+[Service]
+Type=simple
+User=daq
+Group=dialout
+Restart=always
+RestartSec=4
+
+WorkingDirectory=/home/daq/
+
+# create a symlink to a timestamped directory, and echo its resolved path to journalctl
+ExecStartPre=sh -c "mkdir -p element_data && cd element_data && ln -fns $$(date -u +%%Y%%m%%dT%%H%%M%%SZ) current && readlink -f current >&2"
+
+# exec the main process binary, and pipe its stdout to the stdin of a child
+# which will ingest the filenames at their temporary locations in tmpfs, and
+# compress each one and write the compressed output to the final location. this
+# child process and its own children will ignore the initial SIGTERM and only
+# exit when they see eof, such that no temporary files will remain in tmpfs
+ExecStart=bash -c "cd element_data && exec /usr/local/bin/shm_logger > >(trap '' TERM; exec nice -n20 xargs -I file sh -c 'mkdir -p $$(readlink current) && gzip --fast -c < file > current/$$(basename file).gz; rm file')"
+
+[Install]
+WantedBy=multi-user.target

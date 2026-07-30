@@ -1,0 +1,13 @@
+[Unit]
+Description=cobs_to_shm
+
+[Service]
+Type=simple
+Group=dialout
+Restart=always
+RestartSec=4
+ExecStart=sh -c "exec /usr/local/bin/cobs_to_shm /dev/serial/by-id/*SCARI*if00"
+LimitNICE=-20
+
+[Install]
+WantedBy=multi-user.target
