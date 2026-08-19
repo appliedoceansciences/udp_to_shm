@@ -1,12 +1,11 @@
 [Unit]
-Description=cobs_to_shm
+Description=udp_to_shm
 
 [Service]
 Type=simple
-Group=dialout
 Restart=always
 RestartSec=4
-ExecStart=sh -c "exec /usr/local/bin/cobs_to_shm /dev/serial/by-id/*SCARI*if00"
+ExecStart=sh -c "exec /usr/local/bin/udp_to_shm"
 LimitNICE=-20
 
 [Install]
