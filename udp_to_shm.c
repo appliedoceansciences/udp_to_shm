@@ -92,13 +92,6 @@ int main(const int argc, char ** const argv) {
         -1 == sigaction(SIGTERM, &(struct sigaction) { .sa_handler = sigint_handler }, NULL))
         NOPE("%s: sigaction(): %s\n", progname, strerror(errno));
 
-    if (argc > 1) {
-        fprintf(stderr, "%s: called with:", progname);
-        for (size_t iarg = 1; iarg < (size_t)argc; iarg++)
-            fprintf(stderr, " %s", argv[iarg]);
-        fprintf(stderr, "\n");
-    }
-
     unsigned short udp_input_port = 24597;
 
     const char * shm_name = getenv("SHM_NAME") ?: "/cobs_to_shm";
