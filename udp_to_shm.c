@@ -12,22 +12,12 @@
  OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
  USE OR PERFORMANCE OF THIS SOFTWARE.
 
- Logging and fanout for datagrams arriving via UDP
+ Zero-copy shared memory fanout for datagrams arriving via UDP
 
  For each received datagram, an eight-byte logging header is prepended, consisting of a
  little- endian unsigned 16-bit integer representing the size of the packet (not including
  the logging header), and a 48-bit little-endian unsigned integer representing the unix
  epoch time in increments of sixteen microseconds at which the packet was received.
-
- Up to seven bytes of padding are added after each packet to ensure that the subsequent
- header and packet remain eight-byte aligned. In downstream applications, the amount of
- padding to read and discard shall be determined by rounding the packet size indicated in
- the logging header to the next multiple of eight bytes.
-
- Code which consumes this logged format should therefore do an eight-byte read to ingest
- the logging header and determine the packet size, do an additional read of that size
- rounded up to the next multiple of eight, and then simply ignore the ingested padding
- bytes when processing the packet.
 
  Care should be taken to ensure that the system clock is synced to a GPS or precision RTC
  time reference prior to starting this code, and ideally continually therafter.
@@ -133,18 +123,16 @@ int main(const int argc, char ** const argv) {
 
     static_assert(!(sizeof(*buf) % 16), "max shared memory slot size must be a multiple of 16");
 
-    /* establish a shared-memory segment into which we will place the de-escaped incoming
-     packets, which allows them to be shared with zero or more listening downstream
-     processes in a zero-copy scheme, with no possibility of a slow reader blocking the
-     writer or other readers */
+    /* establish a shared-memory segment into which we will place the incoming
+     packets, allowing them to be shared with zero or more listening downstream
+     processes in a zero-copy scheme, with no possibility of a slow reader
+     blocking the writer or other readers */
     struct shared_memory_ringbuffer * shm = shared_memory_ringbuffer_writer_init(shm_name, 4194304, sizeof(*buf));
     if (MAP_FAILED == shm || !shm) exit(EXIT_FAILURE);
 
     /* sleep a bit to give simultaneously-started readers a chance to connect for determinism */
     usleep(200000);
 
-    /* open a udp socket for receiving any application-specific nonacoustic packets and
-     interleaving them with the outgoing acoustic packets in the shm and logged outputs */
     int fd_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (-1 == fd_udp) NOPE("%s: cannot socket(): %s\n", progname, strerror(errno));
 
@@ -160,9 +148,7 @@ int main(const int argc, char ** const argv) {
     /* get the next slot in the ring buffer */
     buf = shared_memory_ringbuffer_acquire(shm);
 
-    /* loop over any udp packets that arrived during this acoustic packet */
-    /* TODO: ideally we would use poll() and react to each of these and the acoustic
-     packets strictly in the order they occur */
+    /* loop over incoming udp packets */
     for (ssize_t recv_ret; (recv_ret = recv(fd_udp, buf->packet, sizeof(buf->packet), 0)) > 0; ) {
         if (got_sigterm_or_sigint) break;
         const size_t packet_size = recv_ret;
