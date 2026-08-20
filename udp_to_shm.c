@@ -23,9 +23,6 @@
  time reference prior to starting this code, and ideally continually therafter.
  */
 
-/* needed for asprintf, must occur prior to any include statements */
-#define _GNU_SOURCE
-
 /* library functions */
 #include "shared_memory_ringbuffer.h"
 
@@ -52,7 +49,6 @@
 #define WARNING_ANSI "\x1B[35;1mwarning:\x1B[0m"
 #define ERROR_ANSI "\x1B[31;1merror:\x1B[0m"
 #define NOPE(...) do { fprintf(stderr, ERROR_ANSI " " __VA_ARGS__); exit(EXIT_FAILURE); } while(0)
-#define alloc_sprintf(...) ({ char * _tmp; if (asprintf(&_tmp, __VA_ARGS__) <= 0) abort(); _tmp ; })
 
 static unsigned long long current_time_in_unix_microseconds(void) {
     struct timespec timespec;
@@ -90,9 +86,6 @@ int main(const int argc, char ** const argv) {
 #ifdef GIT_VERSION
     fprintf(stderr, "%s: built from commit %s\n", progname, GIT_VERSION);
 #endif
-
-    /* ensure that stdout will not be full-buffered */
-    setvbuf(stdout, NULL, _IOLBF, 0);
 
     /* install a signal handler so that we can stop cleanly on sigint or sigterm */
     if (-1 == sigaction(SIGINT, &(struct sigaction) { .sa_handler = sigint_handler }, NULL) ||
