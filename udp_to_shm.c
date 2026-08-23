@@ -134,8 +134,16 @@ int main(const int argc, char ** const argv) {
     /* get the next slot in the ring buffer */
     buf = shared_memory_ringbuffer_acquire(shm);
 
+    /* wait indefinitely for the first packet */
+    ssize_t recv_ret = recv(fd_udp, buf->packet, sizeof(buf->packet), 0);
+    if (recv_ret <= 0) return -1;
+
+    /* once packets start flowing, set a timeout so that we exit if they stop */
+    if (-1 == setsockopt(fd_udp, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){ .tv_sec = 2 }, sizeof(struct timeval)))
+        NOPE("%s: cannot setsockopt(): %s\n", progname, strerror(errno));
+
     /* loop over incoming udp packets */
-    for (ssize_t recv_ret; (recv_ret = recv(fd_udp, buf->packet, sizeof(buf->packet), 0)) > 0; ) {
+    do {
         if (got_sigterm_or_sigint) break;
         const size_t packet_size = recv_ret;
 
@@ -162,7 +170,7 @@ int main(const int argc, char ** const argv) {
 
         /* get the next slot in the ring buffer */
         buf = shared_memory_ringbuffer_acquire(shm);
-    }
+    } while ((recv_ret = recv(fd_udp, buf->packet, sizeof(buf->packet), 0)) > 0);
 
     fprintf(stderr, "%s: exiting\n", progname);
 
