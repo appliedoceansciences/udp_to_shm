@@ -96,12 +96,27 @@ int main(const int argc, char ** const argv) {
     const unsigned short udp_input_port = 24597;
     const unsigned short udp_heartbeat_dest_port = 24598;
     const unsigned heartbeat_interval_us = 500000;
+    const char * heartbeat_ip = NULL;
+
+    /* handle --[key]=[value] or space-separated [key] [value] argument pairs */
+    for (int iarg = 1; iarg < argc; iarg++) {
+        char * key = argv[iarg] + (!strncmp(argv[iarg], "--", 2) ? 2 : 0);
+        const size_t keylen = strcspn(key, "=");
+        const char * val = '=' == key[keylen] ? key + keylen + 1 : argv[iarg + 1] ? argv[++iarg] : "";
+        key[keylen] = '\0';
+
+        if (!strcmp(key, "heartbeat")) heartbeat_ip = val;
+        else NOPE("%s: %s %s: argument unrecognized\n", argv[0], key, val);
+    }
 
     struct sockaddr_in peer = {
         .sin_family = AF_INET,
         .sin_port = htons(udp_heartbeat_dest_port)
     };
-    if (inet_pton(AF_INET, "192.168.7.1", &peer.sin_addr) != 1) abort();
+    if (heartbeat_ip) {
+        if (inet_pton(AF_INET, heartbeat_ip, &peer.sin_addr) != 1) abort();
+        fprintf(stderr, "%s: sending heartbeats to %s:%u every %u ms\r\n", __func__, heartbeat_ip, udp_heartbeat_dest_port, (heartbeat_interval_us + 500) / 1000);
+    }
 
     const char * shm_name = getenv("SHM_NAME") ?: "/cobs_to_shm";
 
@@ -138,7 +153,7 @@ int main(const int argc, char ** const argv) {
     }, sizeof(struct sockaddr_in)))
         NOPE("%s: cannot bind(%d): %s\n", progname, udp_input_port, strerror(errno));
 
-    if (-1 == sendto(fd_udp, "hello\r\n", 7, 0, (void *)&peer, sizeof(peer)))
+    if (heartbeat_ip && -1 == sendto(fd_udp, "hello\r\n", 7, 0, (void *)&peer, sizeof(peer)))
         fprintf(stderr, "warning: %s: failed to send to %u: %s\n", progname, ntohs(peer.sin_port), strerror(errno));
 
     unsigned long long packet_time_previous = 0;
@@ -188,7 +203,7 @@ int main(const int argc, char ** const argv) {
         memcpy(beginning_of_last_packet, buf->packet, sizeof_heartbeat);
 
         if (packet_time_microseconds - heartbeat_time_previous >= heartbeat_interval_us) {
-            if (-1 == sendto(fd_udp, beginning_of_last_packet, sizeof_heartbeat, 0, (void *)&peer, sizeof(peer)))
+            if (heartbeat_ip && -1 == sendto(fd_udp, beginning_of_last_packet, sizeof_heartbeat, 0, (void *)&peer, sizeof(peer)))
                 fprintf(stderr, "warning: %s: failed to send to %u: %s\n", progname, ntohs(peer.sin_port), strerror(errno));
             heartbeat_time_previous = packet_time_microseconds;
             sizeof_heartbeat = 0;
@@ -199,7 +214,7 @@ int main(const int argc, char ** const argv) {
     } while ((recv_ret = recv(fd_udp, buf->packet, sizeof(buf->packet), 0)) > 0);
 
     if (sizeof_heartbeat) {
-        if (-1 == sendto(fd_udp, beginning_of_last_packet, sizeof_heartbeat, 0, (void *)&peer, sizeof(peer)))
+        if (heartbeat_ip && -1 == sendto(fd_udp, beginning_of_last_packet, sizeof_heartbeat, 0, (void *)&peer, sizeof(peer)))
             fprintf(stderr, "warning: %s: failed to send to %u: %s\n", progname, ntohs(peer.sin_port), strerror(errno));
     }
 
