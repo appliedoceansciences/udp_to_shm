@@ -5,7 +5,7 @@ Description=udp_to_shm
 Type=simple
 Restart=always
 RestartSec=4
-ExecStart=sh -c "exec /usr/local/bin/udp_to_shm"
+ExecStart=/usr/local/bin/udp_to_shm --shm /cobs_to_shm
 LimitNICE=-20
 
 [Install]

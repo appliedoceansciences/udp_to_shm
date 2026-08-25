@@ -95,6 +95,7 @@ int main(const int argc, char ** const argv) {
     const unsigned short udp_heartbeat_dest_port = 24598;
     const unsigned heartbeat_interval_us = 500000;
     const char * heartbeat_ip = NULL;
+    const char * shm_name = "/acoustic_packets";
 
     /* handle --[key]=[value] or space-separated [key] [value] argument pairs */
     for (int iarg = 1; iarg < argc; iarg++) {
@@ -104,6 +105,7 @@ int main(const int argc, char ** const argv) {
         key[keylen] = '\0';
 
         if (!strcmp(key, "heartbeat")) heartbeat_ip = val;
+        else if (!strcmp(key, "shm")) shm_name = val;
         else NOPE("%s: %s %s: argument unrecognized\n", argv[0], key, val);
     }
 
@@ -115,8 +117,6 @@ int main(const int argc, char ** const argv) {
         if (inet_pton(AF_INET, heartbeat_ip, &peer.sin_addr) != 1) abort();
         fprintf(stderr, "%s: sending heartbeats to %s:%u every %u ms\r\n", __func__, heartbeat_ip, udp_heartbeat_dest_port, (heartbeat_interval_us + 500) / 1000);
     }
-
-    const char * shm_name = getenv("SHM_NAME") ?: "/cobs_to_shm";
 
     /* only slightly cargo cult scheduling stuff */
     if (-1 == setpriority(0, PRIO_PROCESS, -20))
