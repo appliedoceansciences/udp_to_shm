@@ -26,8 +26,6 @@
 /* library functions */
 #include "shared_memory_ringbuffer.h"
 
-#include "daq_samples.h"
-
 /* c standard includes */
 #include <stdio.h>
 #include <stdlib.h>
