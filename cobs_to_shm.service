@@ -1,0 +1,11 @@
+[Unit]
+Description=cobs_to_shm
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl start udp_to_shm
+ExecStop=/usr/bin/systemctl stop udp_to_shm
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
