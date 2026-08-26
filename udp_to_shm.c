@@ -115,7 +115,7 @@ int main(const int argc, char ** const argv) {
     };
     if (heartbeat_ip) {
         if (inet_pton(AF_INET, heartbeat_ip, &peer.sin_addr) != 1) abort();
-        fprintf(stderr, "%s: sending heartbeats to %s:%u every %u ms\r\n", __func__, heartbeat_ip, udp_heartbeat_dest_port, (heartbeat_interval_us + 500) / 1000);
+        fprintf(stderr, "%s: sending heartbeats to %s:%u every %u ms\r\n", progname, heartbeat_ip, udp_heartbeat_dest_port, (heartbeat_interval_us + 500) / 1000);
     }
 
     /* only slightly cargo cult scheduling stuff */
