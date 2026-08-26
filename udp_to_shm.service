@@ -1,5 +1,6 @@
 [Unit]
 Description=udp_to_shm
+Conflicts=cobs_to_shm.service
 
 [Service]
 Type=simple

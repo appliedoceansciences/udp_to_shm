@@ -1,11 +1,13 @@
 [Unit]
 Description=cobs_to_shm
+Conflicts=udp_to_shm.service
 
 [Service]
-Type=oneshot
-ExecStart=/usr/bin/systemctl start udp_to_shm
-ExecStop=/usr/bin/systemctl stop udp_to_shm
-RemainAfterExit=yes
+Type=simple
+Restart=always
+RestartSec=4
+ExecStart=/usr/local/bin/udp_to_shm --shm /cobs_to_shm --heartbeat 192.168.7.1
+LimitNICE=-20
 
 [Install]
 WantedBy=multi-user.target
