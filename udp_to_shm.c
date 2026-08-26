@@ -151,7 +151,7 @@ int main(const int argc, char ** const argv) {
     }, sizeof(struct sockaddr_in)))
         NOPE("%s: cannot bind(%d): %s\n", progname, udp_input_port, strerror(errno));
 
-    if (heartbeat_ip && -1 == sendto(fd_udp, "hello\r\n", 7, 0, (void *)&peer, sizeof(peer)))
+    if (heartbeat_ip && -1 == sendto(fd_udp, "heartbeat\r\n", 11, 0, (void *)&peer, sizeof(peer)))
         fprintf(stderr, "warning: %s: failed to send to %u: %s\n", progname, ntohs(peer.sin_port), strerror(errno));
 
     unsigned long long packet_time_previous = 0;
