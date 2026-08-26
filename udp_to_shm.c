@@ -163,17 +163,32 @@ int main(const int argc, char ** const argv) {
     size_t sizeof_heartbeat = 0;
     unsigned long long heartbeat_time_previous = 0;
 
-    /* wait indefinitely for the first packet */
-    ssize_t recv_ret = recv(fd_udp, buf->packet, sizeof(buf->packet), 0);
-    if (recv_ret <= 0) return -1;
+    /* loop until we get the first packet, possibly sending heartbeats */
+    ssize_t recv_ret = 0;
+    while (recv_ret <= 0) {
+        if (heartbeat_ip && -1 == sendto(fd_udp, "heartbeat\r\n", 11, 0, (void *)&peer, sizeof(peer)))
+            fprintf(stderr, "warning: %s: failed to send to %u: %s\n", progname, ntohs(peer.sin_port), strerror(errno));
 
-    /* once packets start flowing, set a timeout so that we exit if they stop */
-    if (-1 == setsockopt(fd_udp, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){ .tv_sec = 2 }, sizeof(struct timeval)))
-        NOPE("%s: cannot setsockopt(): %s\n", progname, strerror(errno));
+        recv_ret = recv(fd_udp, buf->packet, sizeof(buf->packet), 0);
+        if (recv_ret < 0) {
+            /* if we timed out, just keep sending another heartbeat and repeating */
+            if (EAGAIN == errno || EWOULDBLOCK == errno) continue;
+            fprintf(stderr, ERROR_ANSI " %s: could not recv(): %s\n", progname, strerror(errno));
+            return -1;
+        }
+    }
 
     /* loop over incoming udp packets */
     do {
         if (got_sigterm_or_sigint) break;
+
+        if (recv_ret < 0) {
+            /* if we timed out, assume no more data is coming */
+            if (EAGAIN == errno || EWOULDBLOCK == errno) break;
+            fprintf(stderr, ERROR_ANSI " %s: could not recv(): %s\n", progname, strerror(errno));
+            return -1;
+        }
+
         const size_t packet_size = recv_ret;
 
         const unsigned long long packet_time_microseconds = current_time_in_unix_microseconds();
