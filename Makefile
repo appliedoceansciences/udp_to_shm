@@ -41,6 +41,8 @@ install : udp_to_shm
 	install -C shm_logger /usr/local/bin/
 	install -C shm_to_pipe /usr/local/bin/
 	install -C shm_logger.service /etc/systemd/system/ || true
+	install -C 99-usb0.rules /etc/udev/rules.d/ || true
+	udevadm control --reload-rules || true
 
 uninstall :
 	$(RM) /usr/local/bin/udp_to_shm
