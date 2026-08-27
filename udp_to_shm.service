@@ -7,7 +7,6 @@ Type=simple
 Restart=always
 RestartSec=4
 CPUAffinity=0
-ExecStartPre=sh -c "echo 1 > /sys/class/net/usb0/queues/rx-0/rps_cpus"
 ExecStart=/usr/local/bin/udp_to_shm --shm /cobs_to_shm --heartbeat 192.168.7.1
 LimitNICE=-20
 

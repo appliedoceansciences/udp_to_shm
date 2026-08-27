@@ -1,0 +1,1 @@
+ACTION=="add", SUBSYSTEM=="net", KERNEL=="usb0", RUN+="/bin/sh -c '/usr/bin/sleep 1; /usr/bin/echo 1 > /sys/class/net/usb0/queues/rx-0/rps_cpus; ip addr add dev usb0 192.168.7.2/24; ip link set dev usb0 up'"
