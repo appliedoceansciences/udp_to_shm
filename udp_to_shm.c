@@ -151,8 +151,9 @@ int main(const int argc, char ** const argv) {
     }, sizeof(struct sockaddr_in)))
         NOPE("%s: cannot bind(%d): %s\n", progname, udp_input_port, strerror(errno));
 
-    if (heartbeat_ip && -1 == sendto(fd_udp, "heartbeat\r\n", 11, 0, (void *)&peer, sizeof(peer)))
-        fprintf(stderr, "warning: %s: failed to send to %u: %s\n", progname, ntohs(peer.sin_port), strerror(errno));
+    /* once packets start flowing, set a timeout so that we exit if they stop */
+    if (-1 == setsockopt(fd_udp, SOL_SOCKET, SO_RCVTIMEO, &(struct timeval){ .tv_sec = 2 }, sizeof(struct timeval)))
+        NOPE("%s: cannot setsockopt(): %s\n", progname, strerror(errno));
 
     unsigned long long packet_time_previous = 0;
 
