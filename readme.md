@@ -4,6 +4,18 @@ This repository implements the Linux end of the interface between a DAQ microcon
 
 This method and repository supersedes [cobs_to_shm](https://github.com/appliedoceansciences/cobs_to_shm), which moved the same framed data over the same physical link using UDP over USB serial on earlier DAQ implementations. Some design decisions are aimed at providing backward compatibility for downstream applications which expect a `cobs_to_shm` service and shared-memory segment name.
 
+## Functional description
+
+Upon startup, the `udp_to_shm` binary initializes a ring buffer in a shared-memory segment and opens a UDP port. Every received packet is prepended with an 8-byte logging header (see below) and placed into the shared-memory ring buffer.
+
+### Heartbeats
+
+Assuming a heartbeat IP address argument is given, the code will initially send UDP packets to the expected sender port at the given IP containing the string "heartbeat" until data packets are recieved. Subsequent heartbeat packets, containing the first 16 bytes of the most recently received data packet will continue to be sent every few hundred milliseconds, as long as data packets continue to be received. After a timeout with no received packets, the code will terminate, sending one final heartbeat packet consisting of the first 16 bytes of the final received data packet.
+
+### Shared-memory segment name
+
+The code itself defaults to using `/acoustic_packets` as the name of the shared-memory segment if none is specified. As of this writing, the included example .service files specify `--shm /cobs_to_shm` in order to preserve backward compatibility with downstream code expecting the latter name. The format of the packets within the shared-memory ring buffer is the same regardless of which of `udp_to_shm` or `cobs_to_shm` is writing to it.
+
 ## Building
 
 Invoke `make` in this repository, with no argument, to compile the code. Optionally, invoke `make install` as root to copy the resulting binary and example `.service` files to `/usr/local/bin/` and `/etc/systemd/system/` respectively, if applicable.
