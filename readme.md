@@ -13,7 +13,6 @@ Invoke `make` in this repository, with no argument, to compile the code. Optiona
 Invoke with an argument specifying the remote IP to which heartbeat messages should be sent:
 
     ./udp_to_shm --heartbeat 192.168.7.1
-    ./packet_health.py shm
 
 Start an additional reader for logging, and pipe the output into logic which will move the resulting files to some final path:
 
