@@ -139,7 +139,7 @@ int main(const int argc, char ** const argv) {
     if (MAP_FAILED == shm || !shm) exit(EXIT_FAILURE);
 
     /* sleep a bit to give simultaneously-started readers a chance to connect for determinism */
-    usleep(200000);
+    usleep(400000);
 
     int fd_udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (-1 == fd_udp) NOPE("%s: cannot socket(): %s\n", progname, strerror(errno));
