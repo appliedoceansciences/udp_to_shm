@@ -7,7 +7,6 @@ Before=network.target
 Type=simple
 Restart=always
 RestartSec=4
-CPUAffinity=0
 ExecStart=/usr/local/bin/udp_to_shm --shm /cobs_to_shm --heartbeat 192.168.7.1
 LimitNICE=-20
 
