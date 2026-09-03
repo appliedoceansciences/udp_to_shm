@@ -171,6 +171,8 @@ int main(const int argc, char ** const argv) {
             fprintf(stderr, "warning: %s: failed to send to %u: %s\n", progname, ntohs(peer.sin_port), strerror(errno));
 
         recv_ret = recv(fd_udp, buf->packet, sizeof(buf->packet), 0);
+        if (got_sigterm_or_sigint) break;
+
         if (recv_ret < 0) {
             /* if we timed out, just keep sending another heartbeat and repeating */
             if (EAGAIN == errno || EWOULDBLOCK == errno) continue;
