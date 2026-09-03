@@ -196,6 +196,9 @@ int main(const int argc, char ** const argv) {
         if (packet_time_previous > packet_time_microseconds)
             fprintf(stderr, WARNING_ANSI " %s: time has jumped backwards by %lld us, new time is %llu\n",
                     progname, packet_time_previous - packet_time_microseconds, packet_time_microseconds);
+        if (!packet_time_previous)
+            fprintf(stderr, "%s: first packet arrived at %llu.%06llu\r\n", progname,
+                    packet_time_microseconds / 1000000ULL, packet_time_microseconds % 1000000ULL);
         packet_time_previous = packet_time_microseconds;
 
         buf->logging_header = ((packet_time_microseconds / 16) << 16) | packet_size;
