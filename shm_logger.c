@@ -156,10 +156,14 @@ int main(int argc, char ** const argv) {
         if (fh && !fwrite(packet_buffer_with_logging_header, sizeof(uint64_t) + packet_size_padded, 1, fh))
             NOPE("%s: fwrite(): %s\n", progname, strerror(errno));
 
-        /* ideally, call this AFTER doing whatever that reads the packet contents, BEFORE
-         pushing any resulting data further downstream */
+        /* if we got lapped during the fwrite, rewind back over the packet we
+         just wrote, so that the file ends with the final packet and not garbage */
         if (!shared_memory_ringbuffer_reader_has_kept_up(shm)) {
-            fprintf(stderr, "%s: reader failed to keep up with writer\n", progname);
+            fprintf(stderr, "%s: failed to keep up with writer, truncating final file\n", progname);
+            const off_t valid_bytes = ftello(fh) - packet_size_padded;
+            fseeko(fh, valid_bytes, SEEK_SET);
+            fflush(fh);
+            ftruncate(fileno(fh), valid_bytes);
             break;
         }
     }
