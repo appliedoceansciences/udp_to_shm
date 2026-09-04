@@ -241,5 +241,8 @@ int main(const int argc, char ** const argv) {
 
     close(fd_udp);
 
+    shared_memory_ringbuffer_writer_close(shm);
+    shm_unlink(shm_name);
+
     return 0;
 }
