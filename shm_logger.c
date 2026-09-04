@@ -29,7 +29,7 @@ int main(int argc, char ** const argv) {
     fprintf(stderr, "%s: built from commit %s\n", progname, GIT_VERSION);
 #endif
 
-    const char * shm_name = argc > 1 ? argv[1] : "/cobs_to_shm";
+    const char * shm_name = argc > 1 ? argv[1] : "/acoustic_packets";
     const char * logging_path = argc > 2 ? argv[2] : "/dev/shm";
 
     /* ensure that stdout will not be full-buffered */

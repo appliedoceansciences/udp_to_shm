@@ -25,7 +25,7 @@ int main(int argc, char ** const argv) {
     /* do some silly stuff to get a progname regardless of runtime environment */
     const char * s, * progname = argc ? ((s = strrchr(argv[0], '/')) ? s + 1 : argv[0]) : __func__;
 
-    const char * shm_name = argc > 1 ? argv[1] : "/cobs_to_shm";
+    const char * shm_name = argc > 1 ? argv[1] : "/acoustic_packets";
 
     /* ensure that stdout will be unbuffered */
     setvbuf(stdout, NULL, _IONBF, 0);

@@ -6,7 +6,7 @@ Type=simple
 Restart=no
 
 # note the parent shell is kept on purpose so that "Killed" or "Segmentation fault" gets logged properly
-ExecStart=bash -c "mkdir -p /var/log/%p && ln -fs /var/log/%p/$$(date -u +%%Y%%m%%dT%%H%%M%%SZ)_%p.txt /var/log/%p/%p.txt && exec 2> >(trap '' TERM; tee /var/log/%p/%p.txt); /usr/local/bin/shm_health.py /cobs_to_shm"
+ExecStart=bash -c "mkdir -p /var/log/%p && ln -fs /var/log/%p/$$(date -u +%%Y%%m%%dT%%H%%M%%SZ)_%p.txt /var/log/%p/%p.txt && exec 2> >(trap '' TERM; tee /var/log/%p/%p.txt); /usr/local/bin/shm_health.py"
 ExecStopPost=mv /var/log/%p/%p.txt /var/log/%p/%p_last.txt
 
 [Install]
