@@ -37,7 +37,7 @@ udp_to_shm.o : shared_memory_ringbuffer.h
 install : udp_to_shm
 	install -C udp_to_shm /usr/local/bin/
 	install -C udp_to_shm.service /etc/systemd/system/ || true
-	install -C cobs_to_shm.service /etc/systemd/system/ || true
+	ln -fs /etc/systemd/system/udp_to_shm.service /etc/systemd/system/cobs_to_shm.service || true
 	install -C shm_logger /usr/local/bin/
 	install -C shm_to_pipe /usr/local/bin/
 	install -C shm_logger.service /etc/systemd/system/ || true
