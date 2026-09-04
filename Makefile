@@ -52,8 +52,12 @@ uninstall :
 	$(RM) /usr/local/bin/udp_to_shm
 	$(RM) /usr/local/bin/shm_logger
 	$(RM) /usr/local/bin/shm_to_pipe
+	$(RM) /usr/local/bin/shm_health.py
+	$(RM) /usr/local/bin/shared_memory_ringbuffer_reader.py
 	$(RM) /etc/systemd/system/udp_to_shm.service || true
 	$(RM) /etc/systemd/system/shm_logger.service || true
+	$(RM) /etc/systemd/system/shm_health.service || true
+	$(RM) /etc/systemd/system/cobs_to_shm.service || true
 
 clean :
 	$(RM) -rf *.o *.dSYM ${TARGETS}
