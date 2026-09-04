@@ -96,6 +96,7 @@ int main(const int argc, char ** const argv) {
     const unsigned heartbeat_interval_us = 500000;
     const char * heartbeat_ip = NULL;
     const char * shm_name = "/acoustic_packets";
+    const char * hardlink = NULL;
 
     /* handle --[key]=[value] or space-separated [key] [value] argument pairs */
     for (int iarg = 1; iarg < argc; iarg++) {
@@ -106,6 +107,9 @@ int main(const int argc, char ** const argv) {
 
         if (!strcmp(key, "heartbeat")) heartbeat_ip = val;
         else if (!strcmp(key, "shm")) shm_name = val;
+#ifndef __APPLE__
+        else if (!strcmp(key, "hardlink")) hardlink = val;
+#endif
         else NOPE("%s: %s %s: argument unrecognized\n", argv[0], key, val);
     }
 
@@ -137,6 +141,11 @@ int main(const int argc, char ** const argv) {
      blocking the writer or other readers */
     struct shared_memory_ringbuffer * shm = shared_memory_ringbuffer_writer_init(shm_name, 8388608, sizeof(*buf));
     if (MAP_FAILED == shm || !shm) exit(EXIT_FAILURE);
+
+    if (hardlink) {
+        chdir("/dev/shm/");
+        link(shm_name + ('/' == shm_name[0] ? 1 : 0), hardlink + ('/' == hardlink[0] ? 1 : 0));
+    }
 
     /* sleep a bit to give simultaneously-started readers a chance to connect for determinism */
     usleep(400000);
@@ -243,6 +252,9 @@ int main(const int argc, char ** const argv) {
 
     shared_memory_ringbuffer_writer_close(shm);
     shm_unlink(shm_name);
+
+    if (hardlink)
+        unlink(hardlink);
 
     return 0;
 }

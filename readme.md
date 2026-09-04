@@ -14,7 +14,7 @@ Assuming a heartbeat IP address argument is given, the code will initially send 
 
 ### Shared-memory segment name
 
-The code itself defaults to using `/acoustic_packets` as the name of the shared-memory segment if none is specified. As of this writing, the included example .service files specify `--shm /cobs_to_shm` in order to preserve backward compatibility with downstream code expecting the latter name. The format of the packets within the shared-memory ring buffer is the same regardless of which of `udp_to_shm` or `cobs_to_shm` is writing to it.
+The code itself defaults to using `/acoustic_packets` as the name of the shared-memory segment if none is specified. As of this writing, the included example .service files specify `--hardlink /cobs_to_shm` in order to also preserve backward compatibility with downstream code expecting the latter name. The format of the packets within the shared-memory ring buffer is the same regardless of which of `udp_to_shm` or `cobs_to_shm` is writing to it.
 
 ## Building
 
