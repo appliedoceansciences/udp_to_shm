@@ -40,6 +40,9 @@ install : udp_to_shm
 	ln -fs /etc/systemd/system/udp_to_shm.service /etc/systemd/system/cobs_to_shm.service || true
 	install -C shm_logger /usr/local/bin/
 	install -C shm_to_pipe /usr/local/bin/
+	install -C shm_health.py /usr/local/bin/
+	install -C shared_memory_ringbuffer_reader.py /usr/local/bin/
+	install -C shm_health.service /etc/systemd/system/ || true
 	install -C shm_logger.service /etc/systemd/system/ || true
 	systemctl daemon-reload || true
 	install -C 99-usb0.rules /etc/udev/rules.d/ || true
