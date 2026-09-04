@@ -30,7 +30,7 @@ Start an additional reader for logging, and pipe the output into logic which wil
 
     ./shm_logger | xargs -I file mv file /final/path/
 
-Example `.service` files are included which invoke the `udp_to_shm` and `shm_logger` binaries with appropriate arguments. Note that these assume a `daq` user with a sub-1000 uid (so that systemd does not delete the shm segment) whose home directory contains the destination directory for the resulting logged data. Adjust this logic according to your needs, or create a `daq` user with a sub-1000 uid and associated home directory using `useradd -rm daq`.
+Example `.service` files are included which invoke the `udp_to_shm` and `shm_logger` binaries with appropriate arguments.
 
 An example udev rule is included which sets a static IP address after a short delay when the device is enumerated. This can be used to, for example, get data flowing before NetworkManager or another DHCP client is fully started.
 
