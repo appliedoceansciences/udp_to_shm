@@ -1,3 +1,6 @@
+/* needed for asprintf, must occur prior to any include statements */
+#define _GNU_SOURCE
+
 #include "shared_memory_ringbuffer.h"
 
 #include <stdio.h>
