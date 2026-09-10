@@ -1,6 +1,6 @@
 [Unit]
 Description=udp_to_shm
-Conflicts=cobs_to_shm.service
+#Conflicts=cobs_to_shm.service
 Before=network.target
 
 [Service]
