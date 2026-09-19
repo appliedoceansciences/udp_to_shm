@@ -46,6 +46,25 @@ def parse_acoustic_packet(packet_bytes, logged_timestamp_microseconds):
     timestamp_unix_seconds = timestamp_microseconds / 1e6
     return packet_tuple(samples=samples, timestamp=timestamp_unix_seconds, fs=sample_rate, seqnum=seqnum, fullscale=fullscale, timestamp_microseconds=timestamp_microseconds, logged_timestamp_microseconds=logged_timestamp_microseconds)
 
+def parse_mavlink_packet(packet_bytes):
+    if 0xfd == packet_bytes[0] and len(packet_bytes) > 1 and packet_bytes[1] + 12 == len(packet_bytes):
+        # mavlink v2 packet
+        msgid = packet_bytes[9] << 16 | packet_bytes[8] << 8 | packet_bytes[7]
+        paylen = packet_bytes[1]
+        payload_bytes = packet_bytes[10:(10 + paylen)]
+        if 33 == msgid and paylen >= 28:
+            # mavlink v2 GLOBAL_POSITION_INT message
+            lat = float(struct.unpack('<i', payload_bytes[4:8])[0]) * 1e-7
+            lon = float(struct.unpack('<i', payload_bytes[8:12])[0]) * 1e-7
+            alt = float(struct.unpack('<i', payload_bytes[12:16])[0]) * 1e-3
+            heading = float(struct.unpack('<H', payload_bytes[26:28])[0]) * 1e-2
+            print('mavlink: lat %gd, lon %gd, alt %g m, hdg %gd' % (lat, lon, alt, heading), file=sys.stderr)
+        return True
+    elif 0xfe == packet_bytes[0] and len(packet_bytes) > 1 and packet_bytes[1] + 8 == len(packet_bytes):
+        # mavlink v1 packet
+        return True
+    else: return False
+
 # this generator function can be specified as one of the possible upstream sources of
 # blocks of bytes used as input to the below generator, and handles all of the details of
 # the on-disk (and in-tcp-stream) logging format used for serialized packets
@@ -89,11 +108,10 @@ def yield_acoustic_packets(yield_packet_bytes_function, source, phonemask):
         # attempt to parse the packet bytes as an acoustic packet
         packet = parse_acoustic_packet(packet_bytes, logged_timestamp_microseconds)
         if not packet:
-            try:
-                tmp = str(packet_bytes, 'utf-8')
-                if tmp.isprintable():
-                    print(tmp, file=sys.stderr)
-            except: continue
+            if parse_mavlink_packet(packet_bytes): continue
+
+            tmp = bytes(packet_bytes).decode('utf-8', errors='replace').strip()
+            print(tmp if tmp.isprintable() else packet_bytes.hex(), file=sys.stderr)
             continue
 
         # emit some diagnostic text on the first packet
