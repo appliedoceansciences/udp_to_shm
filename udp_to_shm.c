@@ -172,6 +172,7 @@ int main(const int argc, char ** const argv) {
     unsigned char beginning_of_last_packet[16];
     size_t sizeof_heartbeat = 0;
     unsigned long long heartbeat_time_previous = 0;
+    char warned_about_no_heartbeat_ip = 0;
 
     /* loop until we get the first packet, possibly sending heartbeats */
     ssize_t recv_ret = 0;
@@ -182,11 +183,15 @@ int main(const int argc, char ** const argv) {
         recv_ret = recv(fd_udp, buf->packet, sizeof(buf->packet), 0);
         if (got_sigterm_or_sigint) break;
 
-        if (recv_ret < 0) {
-            /* if we timed out, just keep sending another heartbeat and repeating */
-            if (EAGAIN == errno || EWOULDBLOCK == errno) continue;
+        if (recv_ret < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
             fprintf(stderr, ERROR_ANSI " %s: could not recv(): %s\n", progname, strerror(errno));
             return -1;
+        }
+
+        /* if we timed out, just keep sending another heartbeat and repeating */
+        if (!heartbeat_ip && !warned_about_no_heartbeat_ip) {
+            warned_about_no_heartbeat_ip = 1;
+            fprintf(stderr, WARNING_ANSI " %s: no heartbeat address given and no data yet, we are assuming something else will send heartbeats\n", progname);
         }
     }
 
