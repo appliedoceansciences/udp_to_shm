@@ -125,7 +125,6 @@ int main(const int argc, char ** const argv) {
     /* only slightly cargo cult scheduling stuff */
     if (-1 == setpriority(0, PRIO_PROCESS, -20))
         fprintf(stderr, WARNING_ANSI " %s: failed to set priority, adjust RLIMIT_NICE\n", progname);
-    mlockall(MCL_CURRENT | MCL_FUTURE);
 
     /* logging header plus maximum size of packet, must be a multiple of 16 */
     struct {
@@ -146,6 +145,9 @@ int main(const int argc, char ** const argv) {
         chdir("/dev/shm/");
         link(shm_name + ('/' == shm_name[0] ? 1 : 0), hardlink + ('/' == hardlink[0] ? 1 : 0));
     }
+
+    /* more cargo cult scheduling stuff */
+    mlockall(MCL_CURRENT | MCL_FUTURE);
 
     /* sleep a bit to give simultaneously-started readers a chance to connect for determinism */
     usleep(400000);
