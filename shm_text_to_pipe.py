@@ -19,7 +19,7 @@ def main():
 
         try:
             tmp = str(packet_bytes, 'utf-8')
-            if tmp.strip().isprintable(): print(tmp)
+            if tmp.strip().isprintable(): print(tmp, flush=True)
         except: continue
 
 main()
