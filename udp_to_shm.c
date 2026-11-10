@@ -93,7 +93,7 @@ int main(const int argc, char ** const argv) {
 
     const unsigned short udp_input_port = 24597;
     const unsigned short udp_heartbeat_dest_port = 24598;
-    const unsigned heartbeat_interval_us = 500000;
+    const unsigned heartbeat_interval_us = 200000;
     const char * heartbeat_ip = NULL;
     const char * shm_name = "/acoustic_packets";
     const char * hardlink = NULL;
