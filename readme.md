@@ -58,6 +58,8 @@ Note that since `.wav` files must include the file length in the header, it is n
 
 - `shm_to_pipe`: Minimum viable C standalone process that consumes packets from the ring buffer and writes them to stdout in the same logging format emitted to disk by `shm_logger`. Functionally equivalent to `shared_memory_ringbuffer_reader.py` when the latter is invoked as a standalone process, but with less overhead. Typically used as the upstream end of soft-realtime DSP pipelines which consist of multiple processes piped together (possibly with an ssh pipe in between processes).
 
+- `packet_health.py`: Ingests the file format written by `shm_to_pipe`, or written to the `.bin` files, and prints some simple statistics. Serves as an example soft-realtime DSP application in Python, which can be developed on recorded data piped into its `stdin`, and then used as-is in real time without further modification.
+
 ### Modules used by the above
 
 - `shared_memory_ringbuffer_reader.py` and `shared_memory_ringbuffer.c`: Python and C modules with functions to read from the shared memory ring buffer and return packets one at a time to calling code. The Python module can also be run as a standalone process, and will yield the stream of packets to `stdout` in the same logging format emitted by `shm_logger`, although see `shm_to_pipe` above for a lower-overhead version of the same functionality.
